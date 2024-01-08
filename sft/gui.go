@@ -62,34 +62,52 @@ func InitGUI() {
 	ipField := InputField("IP", "127.0.0.1", "", &ip)
 	portField := InputField("Port", "1337", "", &port)
 	passwordField := InputField("Password", "azerty", "", &password)
-
-	sizeText := Text("       ")
+	sizeText := Text("\t\t")
+	fileSelector := container.New(layout.NewFormLayout(),
+		widget.NewButton("Choose file", func() {
+			fileWindow.Show()
+			dialog.ShowFileOpen(func(f fyne.URIReadCloser, e error) {
+				if e != nil {
+					fmt.Println("An error occured when opening the file")
+				} else if f == nil {
+					fmt.Println("File selection cancelled")
+				} else {
+					b, e2 := storage.Exists(f.URI())
+					if e2 != nil || !b {
+						fmt.Println("Didn't read any file")
+					} else {
+						fStats, e3 := os.Stat(f.URI().Path())
+						if e3 != nil {
+							fmt.Println("Couldn't open file")
+						} else {
+							file = f
+							str := sizeToString(fStats.Size())
+							if len(str) >= 6 {
+								sizeText.SetText(sizeToString(fStats.Size()) + "\t")
+							} else {
+								sizeText.SetText(sizeToString(fStats.Size()) + "\t\t")
+							}
+							fmt.Printf("Selected file '%s'\n", file.URI().Path())
+						}
+					}
+				}
+				fileWindow.Hide()
+			}, fileWindow)
+		}),
+		sizeText)
 
 	sendUI := center(container.NewVBox(
 		ipField,
 		portField,
 		passwordField,
-		container.New(layout.NewFormLayout(),
-			widget.NewButton("Choose file", func() {
-				fileWindow.Show()
-				dialog.ShowFileOpen(func(f fyne.URIReadCloser, e error) {
-					if e != nil {
-						fmt.Println("An error occured when opening the file")
-					} else {
-						fStats, err := os.Stat(f.URI().Path())
-						if err != nil {
-							fmt.Println("Couldn't open file")
-						} else {
-							file = f
-							sizeText.SetText(sizeToString(fStats.Size()))
-							fmt.Printf("Selected file '%s'\n", file.URI().Path())
-						}
-					}
-					fileWindow.Hide()
-				}, fileWindow)
-			}),
-			sizeText),
-		widget.NewButton("Send file", func() { fmt.Println("Should send but not really atm") })))
+		fileSelector,
+		widget.NewButton("Send file", func() {
+			if file == nil {
+				fmt.Println("No file loaded to send")
+			} else {
+				fmt.Println("Should send but not really atm")
+			}
+		})))
 
 	receiveUI := center(container.NewVBox(
 		ipField,

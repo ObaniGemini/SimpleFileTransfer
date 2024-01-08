@@ -11,7 +11,7 @@ import (
 
 func main() {
 	InitGUI()
-	
+
 	// Connect to the server
 	reader := bufio.NewReader(os.Stdin)
 
@@ -49,6 +49,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	fmt.Println("This program does nothing for now")
 }
