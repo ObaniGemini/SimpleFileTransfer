@@ -1,7 +1,7 @@
 COMMAND=go build
 TARGET=SimpleFileTransfer
 
-GOFILES=sft/gui.go sft/main.go
+GOFILES=sft/math.go sft/gui.go sft/main.go
 
 all: $(TARGET)
 

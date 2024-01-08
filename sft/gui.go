@@ -9,7 +9,6 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"fyne.io/fyne/v2/dialog"
 	"os"
-	"strconv"
 )
 
 func Text(text string) *widget.Label {
@@ -42,24 +41,6 @@ func update(s *string, title, to string) {
 
 func center(c *fyne.Container) *fyne.Container {
 	return container.New(layout.NewCenterLayout(), c)
-}
-
-func getSize(v int64) string {
-	f := func(n, d int64, end string) string {
-		return strconv.FormatInt(n/d, 10) + "," + strconv.Itoa(int(10 * (float64(n)/float64(d) - float64(n/d)))) + " " + end
-	}
-
-	if v < 1024 {
-		return strconv.FormatInt(v, 10) + " o"
-	} else if v < (1024 * 1024) {
-		return f(v, 1024, "kb") 
-	} else if v < (1024 * 1024 * 1024) {
-		return f(v, 1024 * 1024, "Mb")
-	} else if v < (1024 * 1024 * 1024 * 1024) {
-		return f(v, 1024 * 1024 * 1024, "Gb")
-	} else {
-		return f(v, 1024 * 1024 * 1024 * 1024, "Tb")		
-	}
 }
 
 func InitGUI() {
@@ -95,7 +76,7 @@ func InitGUI() {
 							fmt.Println("Couldn't open file")
 						} else {
 							file = f
-							sizeText.SetText(getSize(fStats.Size()))
+							sizeText.SetText(sizeToString(fStats.Size()))
 							fmt.Printf("Selected file '%s'\n", file.URI().Path())
 						}
 					}
