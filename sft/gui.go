@@ -5,9 +5,10 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/layout"
-	"fyne.io/fyne/v2/widget"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/storage"
+	"fyne.io/fyne/v2/widget"
 	"os"
 )
 
@@ -26,7 +27,7 @@ func InputText(placeholder, text string, callback func(string)) *widget.Entry {
 
 func InputField(desc, placeholder, text string, v *string) *fyne.Container {
 	return container.New(
-		layout.NewFormLayout(), 
+		layout.NewFormLayout(),
 		Text(desc),
 		InputText(placeholder, text, func(s string) {
 			fmt.Printf("Updated %s from '%s' to '%s'\n", desc, *v, s)
@@ -48,7 +49,7 @@ func InitGUI() {
 	var file fyne.URIReadCloser
 
 	a := app.New()
-	
+
 	w := a.NewWindow("Simple File Transfer")
 	w.Resize(fyne.NewSize(400, 400))
 	w.SetFixedSize(true)
@@ -58,12 +59,16 @@ func InitGUI() {
 	fileWindow.Resize(fyne.NewSize(500, 400))
 	fileWindow.SetCloseIntercept(fileWindow.Hide)
 
+	ipField := InputField("IP", "127.0.0.1", "", &ip)
+	portField := InputField("Port", "1337", "", &port)
+	passwordField := InputField("Password", "azerty", "", &password)
+
 	sizeText := Text("       ")
 
 	sendUI := center(container.NewVBox(
-		InputField("IP", "127.0.0.1", "", &ip),
-		InputField("Port", "1337", "", &port),
-		InputField("Password", "azerty", "", &password),
+		ipField,
+		portField,
+		passwordField,
 		container.New(layout.NewFormLayout(),
 			widget.NewButton("Choose file", func() {
 				fileWindow.Show()
@@ -81,16 +86,20 @@ func InitGUI() {
 						}
 					}
 					fileWindow.Hide()
-				}, fileWindow)}),
+				}, fileWindow)
+			}),
 			sizeText),
-		widget.NewButton("Send file", func() {fmt.Println("Should send but not really atm")})))
+		widget.NewButton("Send file", func() { fmt.Println("Should send but not really atm") })))
 
 	receiveUI := center(container.NewVBox(
-		widget.NewLabel("Receive UI (not done yet)")))
+		ipField,
+		portField,
+		passwordField,
+		widget.NewButton("Retrieve", func() { fmt.Println("Should connect but not really atm") })))
 
 	initUI := center(container.NewVBox(
-		widget.NewButton("Send", func() {w.SetContent(sendUI)}),
-		widget.NewButton("Receive", func() {w.SetContent(receiveUI)})))
+		widget.NewButton("Send", func() { w.SetContent(sendUI) }),
+		widget.NewButton("Receive", func() { w.SetContent(receiveUI) })))
 
 	w.SetContent(initUI)
 	w.Show()

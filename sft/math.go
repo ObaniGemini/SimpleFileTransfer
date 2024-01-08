@@ -23,9 +23,9 @@ func sizeToString(v int64) string {
 
 	size := int64(len(units))
 	for i := int64(1); i < size; i++ {
-		if v < PowInt64(1024, i + 1) {
+		if v < PowInt64(1024, i+1) {
 			d := PowInt64(1024, i)
-			return strconv.FormatInt(v/d, 10) + "," + strconv.Itoa(int(10 * (float64(v)/float64(d) - float64(v/d)))) + " " + units[i]
+			return strconv.FormatInt(v/d, 10) + "," + strconv.Itoa(int(10*(float64(v)/float64(d)-float64(v/d)))) + " " + units[i]
 		}
 	}
 
