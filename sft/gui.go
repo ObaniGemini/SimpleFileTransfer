@@ -44,7 +44,7 @@ func center(c *fyne.Container) *fyne.Container {
 	return container.New(layout.NewCenterLayout(), c)
 }
 
-func InitGUI() {
+func RunGUI() {
 	var ip, port, password string
 	var file fyne.URIReadCloser
 

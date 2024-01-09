@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	InitGUI()
+	RunGUI()
 
 	// Connect to the server
 	reader := bufio.NewReader(os.Stdin)
