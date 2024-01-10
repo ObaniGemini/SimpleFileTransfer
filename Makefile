@@ -1,7 +1,13 @@
 COMMAND=go build
 TARGET=SimpleFileTransfer
 
-GOFILES=sft/math.go sft/gui.go sft/main.go
+ifeq ($(OS),Windows_NT)
+	GOFILES = sft/windows.go
+else
+	GOFILES = sft/unix.go
+endif
+
+GOFILES += sft/math.go sft/gui.go sft/main.go
 
 all: $(TARGET)
 

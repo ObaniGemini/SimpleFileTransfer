@@ -47,25 +47,30 @@ func center(c *fyne.Container) *fyne.Container {
 func RunGUI() {
 	var ip, port, password string
 	var file fyne.URIReadCloser
+	var folder fyne.ListableURI
+
+	spaceLeft := DiskSpaceLeft()
+	fmt.Printf("Disk space left : %s\n", sizeToString(spaceLeft))
 
 	a := app.New()
 
 	w := a.NewWindow("Simple File Transfer")
-	w.Resize(fyne.NewSize(400, 400))
+	w.Resize(fyne.NewSize(500, 400))
 	w.SetFixedSize(true)
 	w.SetMaster()
 
-	fileWindow := a.NewWindow("Pick a file to send")
-	fileWindow.Resize(fyne.NewSize(500, 400))
-	fileWindow.SetCloseIntercept(fileWindow.Hide)
+	chooserWindow := a.NewWindow("")
+	chooserWindow.Resize(fyne.NewSize(500, 400))
+	chooserWindow.SetCloseIntercept(chooserWindow.Hide)
 
 	ipField := InputField("IP", "127.0.0.1", "", &ip)
 	portField := InputField("Port", "1337", "", &port)
 	passwordField := InputField("Password", "azerty", "", &password)
+
 	sizeText := Text("\t\t")
 	fileSelector := container.New(layout.NewFormLayout(),
 		widget.NewButton("Choose file", func() {
-			fileWindow.Show()
+			chooserWindow.Show()
 			dialog.ShowFileOpen(func(f fyne.URIReadCloser, e error) {
 				if e != nil {
 					fmt.Println("An error occured when opening the file")
@@ -81,20 +86,38 @@ func RunGUI() {
 							fmt.Println("Couldn't open file")
 						} else {
 							file = f
-							str := sizeToString(fStats.Size())
+							str := sizeToString(uint64(fStats.Size()))
 							if len(str) >= 6 {
-								sizeText.SetText(sizeToString(fStats.Size()) + "\t")
+								sizeText.SetText(sizeToString(uint64(fStats.Size())) + "\t")
 							} else {
-								sizeText.SetText(sizeToString(fStats.Size()) + "\t\t")
+								sizeText.SetText(sizeToString(uint64(fStats.Size())) + "\t\t")
 							}
 							fmt.Printf("Selected file '%s'\n", file.URI().Path())
 						}
 					}
 				}
-				fileWindow.Hide()
-			}, fileWindow)
+				chooserWindow.Hide()
+			}, chooserWindow)
 		}),
 		sizeText)
+
+	const chooseOutput string = "Choose an output folder"
+	folderSelectText := Text(chooseOutput)
+	folderSelector := widget.NewButton("Choose folder", func() {
+		chooserWindow.Show()
+		dialog.ShowFolderOpen(func(f fyne.ListableURI, e error) {
+			if e != nil {
+				fmt.Println("An error occured when opening the folder")
+				folderSelectText.SetText(chooseOutput)
+			} else if f == nil {
+				fmt.Println("Folder selection cancelled")
+			} else {
+				folder = f
+				folderSelectText.SetText("")
+			}
+			chooserWindow.Hide()
+		}, chooserWindow)
+	})
 
 	sendUI := center(container.NewVBox(
 		ipField,
@@ -113,11 +136,25 @@ func RunGUI() {
 		ipField,
 		portField,
 		passwordField,
-		widget.NewButton("Retrieve", func() { fmt.Println("Should connect but not really atm") })))
+		folderSelector,
+		widget.NewButton("Retrieve", func() {
+			if folder == nil {
+				fmt.Println("Choose a folder mate")
+			} else {
+				fmt.Println("Should connect but not really atm")
+			}
+		}),
+		folderSelectText))
 
 	initUI := center(container.NewVBox(
-		widget.NewButton("Send", func() { w.SetContent(sendUI) }),
-		widget.NewButton("Receive", func() { w.SetContent(receiveUI) })))
+		widget.NewButton("Send", func() {
+			chooserWindow.SetTitle("Pick a file to send")
+			w.SetContent(sendUI)
+		}),
+		widget.NewButton("Receive", func() {
+			chooserWindow.SetTitle("Pick a folder to store the file")
+			w.SetContent(receiveUI)
+		})))
 
 	w.SetContent(initUI)
 	w.Show()
